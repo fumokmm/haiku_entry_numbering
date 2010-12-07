@@ -15,6 +15,7 @@
     var main = function(nodes) {
 	// 現在のキーワード
 	// TODO: ページの分解
+	alert(location.href)
 	var searchKeyword = location.href.replace('http://h.hatena.ne.jp/keyword/', '')
 
 	// API呼び出し
@@ -44,12 +45,21 @@
 	    // TODO: アラートはやめる
 	    alert(keywordInfo.title + "の現在のエントリ数は" + keywordInfo.entry_count + "です。")
 	    // TODO: 番号をエントリに埋め込む
+
+	    nodes.forEach(function(node){
+	      var titles = xpath("descendant-or-self::div[@class='entry']/div[@class='list-body']/h2[@class='title']", node);
+	      titles.forEach(function(titleNode) {
+	        // キーワードタイトル
+		var title = getTitle(titleNode);
+	      })
+	    })
 	}
     }
 
     //メイン処理を実行
     main([document])
 
+    // AutoPagerizeで継ぎ足されたページでもメイン処理を実行できるように登録
     // (by http://os0x.g.hatena.ne.jp/os0x/20080131/1201762604)
     setTimeout(function() {
 	if (window.AutoPagerize && window.AutoPagerize.addFilter) {
@@ -79,5 +89,27 @@
 	}
 	return nodes
     }
+
+    /**
+     * ノードのタイトル(キーワード)を取得する
+     * @param node ノード
+     */
+    function getTitle(node) {
+	// ===========NOTE===========
+	// NodeType 1 : 要素
+	// NodeType 3 : テキストノード
+	// ===========NOTE===========
+
+	var children = node.childNodes;
+	for (var i = 0; i < children.length; i++) {
+	    if (children[i].nodeType == 1 && children[i].nodeName == 'A') {
+		// プロフィール画像などが入るとテキストノードでない場合があるため
+		if (children[i].firstChild.nodeType == 3) {
+		    return children[i].firstChild.nodeValue;
+		}
+	    }
+	}
+    }
+
     // --------------------------------------------------------------
 })()
