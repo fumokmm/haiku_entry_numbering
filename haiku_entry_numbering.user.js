@@ -32,7 +32,7 @@
 		    "entry_count" : "213"
 		  }
 		======================================*/
-		var info = eval("(" + httpObj.responseText + ")")
+		var info = eval('(' + httpObj.responseText + ')')
 		callback(info)
 	    }
 	})
@@ -75,16 +75,20 @@
      * @return [keyword: キーワード, page: ページ番号]
      */
     function getKeywordInfo() {
-        var qs = {}
-        var qsList = location.search.substr(1).split('&')
-	for (items in qsList) {
-	    var item = items.split('=')
-	    qs[item[0]] = item[1]
-	}
-	if (! qs) qs.page = 1
+        var qsMap = null
+        var qs = location.search.substr(1)
+        if (qs) {
+            qs = qs.split('&')
+	    for (var i = 0; i < qs.length; i++) {
+	        var kv = qs[i].split('=')
+                if (qsMap == null) qsMap = {}
+	        qsMap[kv[0]] = kv[1]
+            }
+        }
+	if (qsMap == null) qsMap = {page: 1}
 	return {
 	    keyword: location.pathname.replace(/^\/keyword\//, ''),
-            page   : Number(qs.page)
+            page   : Number(qsMap.page)
 	}
     }
 
