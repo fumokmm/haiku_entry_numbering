@@ -4,7 +4,7 @@
 // @description    haiku_entry_numbering
 // @include        http://h.hatena.ne.jp/keyword/*
 // @author         fumokmm
-// @date           2010-12-06
+// @date           2010-12-07
 // @version        0.01
 // ==/UserScript==
 
@@ -14,16 +14,13 @@
      */
     var main = function(nodes) {
 	// 現在のキーワード
-	// TODO: ページの分解
-	alert(location.href)
-	var searchKeyword = location.href.replace('http://h.hatena.ne.jp/keyword/', '')
-
+	var searchKeywordInfo = getKeywordInfo()
 	// API呼び出し
 	GM_xmlhttpRequest({
 	    method: 'GET',
-	    url   : 'http://h.hatena.ne.jp/api/keywords/show/' + searchKeyword + '.json',
+	    url   : 'http://h.hatena.ne.jp/api/keywords/show/' + searchKeywordInfo.keyword + '.json',
 	    onload: function(httpObj) {
-		/*--- JSON sample
+		/*======= NOTE ====== [JSON sample] ==
 		  {
 		    "related_keywords" : [
 		      "xxx",
@@ -34,24 +31,26 @@
 		    "title" : "zzz",
 		    "entry_count" : "213"
 		  }
-		---*/
+		======================================*/
 		var info = eval("(" + httpObj.responseText + ")")
 		callback(info)
 	    }
 	})
 
 	// API問い合わせ後、呼ばれる関数
-	function callback(keywordInfo) {
-	    // TODO: アラートはやめる
-	    alert(keywordInfo.title + "の現在のエントリ数は" + keywordInfo.entry_count + "です。")
-	    // TODO: 番号をエントリに埋め込む
-
+	function callback(info) {
+            // 現在のキーワードのエントリ数
+            var number = info.entry_count - (searchKeywordInfo.page - 1) * 20
 	    nodes.forEach(function(node){
-	      var titles = xpath("descendant-or-self::div[@class='entry']/div[@class='list-body']/h2[@class='title']", node);
-	      titles.forEach(function(titleNode) {
-	        // キーワードタイトル
-		var title = getTitle(titleNode);
-	      })
+                // タイトルのh2要素を取得
+	        var titles = xpath("descendant-or-self::div[@class='entry']/div[@class='list-body']/h2[@class='title']", node)
+                titles.forEach(function(titleNode) {
+	            // 番号のspan要素を生成
+                    var numberNode = document.createElement('span')
+                    numberNode.appendChild(document.createTextNode('[' + (number--) + '] '))
+                    // 生成した番号のspan要素をタイトルの前に追加
+                    titleNode.insertBefore(numberNode, titleNode.firstChild)
+                })
 	    })
 	}
     }
@@ -70,6 +69,24 @@
 	    }, false)
 	}
     }, 0)
+
+    /**
+     * キーワード情報を取得
+     * @return [keyword: キーワード, page: ページ番号]
+     */
+    function getKeywordInfo() {
+        var qs = {}
+        var qsList = location.search.substr(1).split('&')
+	for (items in qsList) {
+	    var item = items.split('=')
+	    qs[item[0]] = item[1]
+	}
+	if (! qs) qs.page = 1
+	return {
+	    keyword: location.pathname.replace(/^\/keyword\//, ''),
+            page   : Number(qs.page)
+	}
+    }
 
     // --------------------------------------------------------------
     // XPath処理の関数
@@ -90,26 +107,6 @@
 	return nodes
     }
 
-    /**
-     * ノードのタイトル(キーワード)を取得する
-     * @param node ノード
-     */
-    function getTitle(node) {
-	// ===========NOTE===========
-	// NodeType 1 : 要素
-	// NodeType 3 : テキストノード
-	// ===========NOTE===========
-
-	var children = node.childNodes;
-	for (var i = 0; i < children.length; i++) {
-	    if (children[i].nodeType == 1 && children[i].nodeName == 'A') {
-		// プロフィール画像などが入るとテキストノードでない場合があるため
-		if (children[i].firstChild.nodeType == 3) {
-		    return children[i].firstChild.nodeValue;
-		}
-	    }
-	}
-    }
-
     // --------------------------------------------------------------
+
 })()
