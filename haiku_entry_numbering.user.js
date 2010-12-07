@@ -4,71 +4,82 @@
 // @description    haiku_entry_numbering
 // @include        http://h.hatena.ne.jp/keyword/*
 // @author         fumokmm
-// @date           2010-12-07
+// @date           2010-12-08
 // @version        0.01
 // ==/UserScript==
 
 (function() {
-    /**
-     * メイン処理
-     */
-    var main = function(nodes) {
-	// 現在のキーワード
-	var searchKeywordInfo = getKeywordInfo()
-	// API呼び出し
-	GM_xmlhttpRequest({
-	    method: 'GET',
-	    url   : 'http://h.hatena.ne.jp/api/keywords/show/' + searchKeywordInfo.keyword + '.json',
-	    onload: function(httpObj) {
-		/*======= NOTE ====== [JSON sample] ==
-		  {
-		    "related_keywords" : [
-		      "xxx",
-		      "yyy"
-		    ],
-		    "link" : "http://h.hatena.ne.jp/keyword/zzz",
-		    "followers_count" : "1",
-		    "title" : "zzz",
-		    "entry_count" : "213"
-		  }
-		======================================*/
-		var info = eval('(' + httpObj.responseText + ')')
-		callback(info)
+    // --------------------------------------------------------------
+    // 定数定義
+
+    // IDのプレフィックス
+    var NUMBER_TEMPLATE = '$num: ';
+
+    // 現在のキーワード
+    var searchKeywordInfo = getKeywordInfo()
+    searchKeywordInfo.nowNumber = -1
+    var apiInfo = null
+    // API呼び出し
+    GM_xmlhttpRequest({
+        method: 'GET',
+        url   : 'http://h.hatena.ne.jp/api/keywords/show/' + searchKeywordInfo.keyword + '.json',
+        onload: function(httpObj) {
+	    /*======= NOTE ====== [JSON sample] ==
+	    {
+	      "related_keywords" : [
+	        "xxx",
+	        "yyy"
+	      ],
+	      "link" : "http://h.hatena.ne.jp/keyword/zzz",
+	      "followers_count" : "1",
+	      "title" : "zzz",
+	      "entry_count" : "213"
 	    }
-	})
-
-	// API問い合わせ後、呼ばれる関数
-	function callback(info) {
-            // 現在のキーワードのエントリ数
-            var number = info.entry_count - (searchKeywordInfo.page - 1) * 20
-	    nodes.forEach(function(node){
-                // タイトルのh2要素を取得
-	        var titles = xpath("descendant-or-self::div[@class='entry']/div[@class='list-body']/h2[@class='title']", node)
-                titles.forEach(function(titleNode) {
-	            // 番号のspan要素を生成
-                    var numberNode = document.createElement('span')
-                    numberNode.appendChild(document.createTextNode('[' + (number--) + '] '))
-                    // 生成した番号のspan要素をタイトルの前に追加
-                    titleNode.insertBefore(numberNode, titleNode.firstChild)
-                })
-	    })
-	}
-    }
-
-    //メイン処理を実行
-    main([document])
+	    ======================================*/
+	    apiInfo = eval('(' + httpObj.responseText + ')')
+            //メイン処理を実行
+	    main([document], apiInfo)
+        }
+    })
 
     // AutoPagerizeで継ぎ足されたページでもメイン処理を実行できるように登録
     // (by http://os0x.g.hatena.ne.jp/os0x/20080131/1201762604)
     setTimeout(function() {
 	if (window.AutoPagerize && window.AutoPagerize.addFilter) {
-	    window.AutoPagerize.addFilter(main)
+	    window.AutoPagerize.addFilter(function(){ main([document], apiInfo) })
 	} else {
 	    window.addEventListener('GM_AutoPagerizeLoaded', function(){
-		window.AutoPagerize.addFilter(main)
+		window.AutoPagerize.addFilter(function(){ main([document], apiInfo) })
 	    }, false)
 	}
     }, 0)
+
+    /**
+     * メイン処理
+     */
+    function main(nodes, apiInfo) {
+        // 現在のキーワードのエントリ数
+        var number = apiInfo.entry_count - (searchKeywordInfo.page - 1) * 20
+	if (searchKeywordInfo.nowNumber == -1) searchKeywordInfo.nowNumber = number
+
+	nodes.forEach(function(node){
+            // タイトルのh2要素を取得
+            var titles = xpath("descendant-or-self::div[@class='entry']/div[@class='list-body']/h2[@class='title']", node)
+	    titles.forEach(function(titleNode) {
+		// number が nowNumber 以下になったら実行
+		if (number <= searchKeywordInfo.nowNumber) {
+	            // 番号のspan要素を生成
+                    var numberNode = document.createElement('span')
+                    numberNode.appendChild(document.createTextNode(NUMBER_TEMPLATE.replace('$num', number)))
+                    // 生成した番号のspan要素をタイトルの前に追加
+                    titleNode.insertBefore(numberNode, titleNode.firstChild)
+	        }
+                number--
+            })
+	})
+
+        searchKeywordInfo.nowNumber = number
+    }
 
     /**
      * キーワード情報を取得
