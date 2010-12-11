@@ -30,39 +30,44 @@
     var apiInfo = null
     var callMain = null
 
-    if (searchKeywordInfo) {
-        searchKeywordInfo.nowNumber = -1
-        // API呼び出し
-        GM_xmlhttpRequest({
-            method: 'GET',
-            url   : 'http://h.hatena.ne.jp/api/keywords/show/' + searchKeywordInfo.keyword + '.json',
-            onload: function(httpObj) {
-                /*======= NOTE ====== [JSON sample] ==
-	        {
-	          "related_keywords" : [
-	            "xxx",
-	            "yyy"
-	          ],
-	          "link" : "http://h.hatena.ne.jp/keyword/zzz",
-	          "followers_count" : "1",
-	          "title" : "zzz",
-	          "entry_count" : "213"
-	        }
-	        ======================================*/
-                apiInfo = eval('(' + httpObj.responseText + ')')
-                //メイン処理を実行
-                mainForKeyword([document], apiInfo)
-            }
-        })
-    } else {
-        callMain = function(){ main([document]) }
+    switch (MODE) {
+        case 'keyword' :
+            searchKeywordInfo.nowNumber = -1
+            // API呼び出し
+            GM_xmlhttpRequest({
+                method: 'GET',
+                url   : 'http://h.hatena.ne.jp/api/keywords/show/' + searchKeywordInfo.keyword + '.json',
+                onload: function(httpObj) {
+                    /*======= NOTE ====== [JSON sample] ==
+	            {
+	              "related_keywords" : [
+	                "xxx",
+	                "yyy"
+                      ],
+	              "link" : "http://h.hatena.ne.jp/keyword/zzz",
+	              "followers_count" : "1",
+	              "title" : "zzz",
+	              "entry_count" : "213"
+	            }
+	            ======================================*/
+                    apiInfo = eval('(' + httpObj.responseText + ')')
+                    //メイン処理を実行
+                    mainForKeyword([document], apiInfo)
+                }
+            })
+            break
+
+        case 'settings' :
+            callMain = function(){ mainForSettings([document]) }
+            break
+
+        default :
+            callMain = function(){ main([document]) }
+            break
     }
 
-    if (callMain) {
-        callMain()
-    } else {
-        callMain = function(){ mainForKeyword([document], apiInfo) }
-    }
+    if (callMain) callMain()
+    else callMain = function(){ mainForKeyword([document], apiInfo) }
 
     // AutoPagerizeで継ぎ足されたページでもメイン処理を実行できるように登録
     // (by http://os0x.g.hatena.ne.jp/os0x/20080131/1201762604)
@@ -131,6 +136,35 @@
                 }
             })
 	})
+    }
+
+    /**
+     * メイン処理(キーワードページ以外)
+     */
+    function mainForSettings(nodes) {
+        alert('settings')
+/*
+	nodes.forEach(function(node){
+            // タイトルのh2要素を取得
+            var titles = xpath("descendant-or-self::div[@class='entry']/div[@class='list-body']/h2[@class='title']", node)
+	    titles.forEach(function(titleNode) {
+　　　　　　      // ステータスIDを取得
+                var infoNode = xpath("descendant::div[@class='info']/span[@class='timestamp']", titleNode.parentNode)[0]
+                var statusId = infoNode.firstChild.href.replace(/^.+\//, '')
+                var number = dataStore.getValue(statusId)
+                if (number) {
+                    // まだ追加していなければ実行
+	            if (titleNode.firstChild.tagName.toLowerCase() != 'span') {
+	                // 番号のspan要素を生成
+                        var numberNode = document.createElement('span')
+                        numberNode.appendChild(document.createTextNode(NUMBER_TEMPLATE.replace('$num', number)))
+                        // 生成した番号のspan要素をタイトルの前に追加
+                        titleNode.insertBefore(numberNode, titleNode.firstChild)
+	            }
+                }
+            })
+	})
+*/
     }
 
     /**
