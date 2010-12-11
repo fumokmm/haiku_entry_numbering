@@ -4,8 +4,8 @@
 // @description    haiku_entry_numbering
 // @include        http://h.hatena.ne.jp/*
 // @author         fumokmm
-// @date           2010-12-08
-// @version        0.01
+// @date           2010-12-11
+// @version        0.02
 // ==/UserScript==
 
 // TODO: キーワードタイムライン以外も対応
