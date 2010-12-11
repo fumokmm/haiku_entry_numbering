@@ -21,7 +21,6 @@
 
     // モード
     const MODE = getMode()
-    alert(MODE)
 
     // データストアからデータを取得
     var dataStore = eval('(' + GM_getValue(DS_KEY, new DataStore().toSource()) + ')')
