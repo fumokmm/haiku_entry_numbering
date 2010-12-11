@@ -1,4 +1,4 @@
-﻿// ==UserScript==
+// ==UserScript==
 // @name           haiku_entry_numbering
 // @namespace      http://d.hatena.ne.jp/fumokmm/
 // @description    haiku_entry_numbering
@@ -11,67 +11,21 @@
 // TODO: キーワードタイムライン以外も対応
 
 (function() {
-    function Queue() {
-	this._a = []
-	this.enqueue = function(o) {
-	    this._a.push(o)
-	}
-	this.dequeue = function() {
-	    if (this._a.length > 0) {
-		return this._a.shift()
-	    }
-	    return null
-	}
-	this.size = function() {
-	    return this._a.length
-	}
- 	this.contains = function(o) {
-	    var s = this.size()
-	    for (var i = 0; i < s; i++) {
-		if (this._a[i] == o) return true
-	    }
-	    return false
-	}
-	this.toString = function() {
-	    return '[' + this._a.join(', ') + ']'
-	}
-    }
-
-    var DataStore = function() {
-	this.limit = 100
-	this.list = new Queue()
-	this.map = {}
-	this.update = function(key, value) {
-	    if (this.list.contains(key)) {
-		if (this.map[key] != value) {
-		    this.map[key] = value
-		}
-	    } else {
-		if (this.list.size() == this.limit) {
-		    var deletedKey = this.list.dequeue()
-		    delete this.map[deletedKey]
-		}
-		this.list.enqueue(key)
-		this.map[key] = value
-	    }
-	}
-	this.get = function(key) {
-	    
-	}
-    }
-
-
-
-
-
 
     // --------------------------------------------------------------
     // 定数定義
 
     // IDのプレフィックス
-    var NUMBER_TEMPLATE = '$num: ';
+    const NUMBER_TEMPLATE = '$num: '
 
-    // TODO: データストアからデータを取得
+    // データストアキー
+    const DS_KEY = 'statusid_number_map'
+
+    // データストアからデータを取得
+    var dataStore = eval('(' + GM_getValue(DS_KEY, new DataStore().toSource()) + ')')
+    dataStore.update("k" + dataStore.size(), "v" + dataStore.size())
+    alert(dataStore.getValue('k5'))
+    GM_setValue(DS_KEY, dataStore.toSource())
 
     // 現在のキーワード
     var searchKeywordInfo = getKeywordInfo()
@@ -123,8 +77,11 @@
 	nodes.forEach(function(node){
             // タイトルのh2要素を取得
             var titles = xpath("descendant-or-self::div[@class='entry']/div[@class='list-body']/h2[@class='title']", node)
-	    // TODO: ステータスIDも取得
 	    titles.forEach(function(titleNode) {
+　　　　　　      // ステータスIDを取得
+                var infoNode = xpath("descendant::div[@class='info']/span[@class='timestamp']", titleNode.parentNode)[0]
+                var statusId = infoNode.firstChild.href.replace(/^.+\//, '')
+
 		// number が nowNumber 以下になったら実行
 		if (number <= searchKeywordInfo.nowNumber) {
 		    // TODO: データストアから取得できたらその値を使う
@@ -137,6 +94,7 @@
 	            // 番号のspan要素を生成
                     var numberNode = document.createElement('span')
                     numberNode.appendChild(document.createTextNode(NUMBER_TEMPLATE.replace('$num', number)))
+
                     // 生成した番号のspan要素をタイトルの前に追加
                     titleNode.insertBefore(numberNode, titleNode.firstChild)
 	        }
@@ -187,6 +145,50 @@
 	    nodes.push(results.snapshotItem(i))
 	}
 	return nodes
+    }
+
+    // --------------------------------------------------------------
+    function DataStore() {
+        this._limit = 5
+	this._a = []
+        this._m = {}
+
+	this._enqueue = function(o) {
+	    this._a.push(o)
+	}
+	this._dequeue = function() {
+	    if (this.size() > 0) {
+		return this._a.shift()
+	    }
+	    return null
+	}
+	this.size = function() {
+	    return this._a.length
+	}
+ 	this.contains = function(o) {
+            return this._m[o] !== undefined
+	}
+        this.update = function(k, v) {
+            if (this.contains(k)) {
+	        this._m[k] = v                    
+            } else {
+                while (! (this.size() < this._limit)) {
+                    delete this._m[this._dequeue()]
+                }
+                this._enqueue(k)
+                this._m[k] = v
+            }
+        }
+        this.getValue = function(k) {
+            return this._m[k]
+        }
+	this.toString = function() {
+	    var result = '[' + this._a.join(', ') + ']\n'
+            result += '{'
+            for (key in this._m) result += (key + '=' + this._m[key] + ' ')
+            result += '}'
+            return result
+	}
     }
 
     // --------------------------------------------------------------
