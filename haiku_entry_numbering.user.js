@@ -19,6 +19,10 @@
     // データストアキー
     const DS_KEY = 'statusid_number_map'
 
+    // モード
+    const MODE = getMode()
+    alert(MODE)
+
     // データストアからデータを取得
     var dataStore = eval('(' + GM_getValue(DS_KEY, new DataStore().toSource()) + ')')
 
@@ -131,12 +135,22 @@
     }
 
     /**
+     * 'keyword' or 'settings' or 'normal'
+     */
+    function getMode() {
+        var pathname = location.pathname
+        if (pathname.search('/keyword') >= 0) return 'keyword'
+        if (pathname.search('/settings') >= 0) return 'settings'
+        return 'normal'
+    }
+
+    /**
      * キーワード情報を取得
      * @return キーワードページの場合   : [keyword: キーワード, page: ページ番号]
      *         キーワードページ以外の場合: undefined
      */
     function getKeywordInfo() {
-        if (location.pathname.search('/keyword') < 0) return null
+        if (MODE != 'keyword') return undefined
         var qsMap = null
         var qs = location.search.substr(1)
         if (qs) {
