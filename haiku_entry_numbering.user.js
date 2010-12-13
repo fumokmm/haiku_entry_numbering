@@ -143,29 +143,60 @@
      * メイン処理(キーワードページ以外)
      */
     function mainForSettings(nodes) {
-        alert('settings')
-/*
 	nodes.forEach(function(node){
             // タイトルのh2要素を取得
-            var titles = xpath("descendant-or-self::div[@class='entry']/div[@class='list-body']/h2[@class='title']", node)
-	    titles.forEach(function(titleNode) {
-　　　　　　      // ステータスIDを取得
-                var infoNode = xpath("descendant::div[@class='info']/span[@class='timestamp']", titleNode.parentNode)[0]
-                var statusId = infoNode.firstChild.href.replace(/^.+\//, '')
-                var number = dataStore.getValue(statusId)
-                if (number) {
-                    // まだ追加していなければ実行
-	            if (titleNode.firstChild.tagName.toLowerCase() != 'span') {
-	                // 番号のspan要素を生成
-                        var numberNode = document.createElement('span')
-                        numberNode.appendChild(document.createTextNode(NUMBER_TEMPLATE.replace('$num', number)))
-                        // 生成した番号のspan要素をタイトルの前に追加
-                        titleNode.insertBefore(numberNode, titleNode.firstChild)
-	            }
-                }
-            })
+            var sectionNode = xpath("descendant-or-self::div[@class='section']", node)[0]
+
+            var fieldSetNode = document.createElement('fieldset')
+            fieldSetNode.setAttribute('class', 'config')
+
+            sectionNode.appendChild(fieldSetNode)
+
+            var legendNode = document.createElement('legend')
+            legendNode.appendChild(document.createTextNode('haiku_entry_numbering'))
+
+            var tableNode = document.createElement('table')
+            tableNode.setAttribute('class', 'config')
+            
+            fieldSetNode.appendChild(legendNode)
+            fieldSetNode.appendChild(tableNode)
+
+            var tbodyNode = document.createElement('tbody')
+
+            tableNode.appendChild(tbodyNode)
+
+            var tr1Node = document.createElement('tr')
+
+            tbodyNode.appendChild(tr1Node)
+
+            var th1Node = document.createElement('th')
+            th1Node.setAttribute('class', 'row')
+            th1Node.appendChild(document.createTextNode('テンプレート'))
+            var td1Node = document.createElement('td')
+            var input1Node = document.createElement('input')
+            input1Node.setAttribute('type', 'text')
+            input1Node.setAttribute('value', NUMBER_TEMPLATE)
+            td1Node.appendChild(input1Node)
+
+            tr1Node.appendChild(th1Node)
+            tr1Node.appendChild(td1Node)
+
+            var tr2Node = document.createElement('tr')
+
+            tbodyNode.appendChild(tr2Node)
+
+            var th2Node = document.createElement('th')
+            th2Node.setAttribute('class', 'row')
+            th2Node.appendChild(document.createTextNode('保存数'))
+            var td2Node = document.createElement('td')
+            var input2Node = document.createElement('input')
+            input2Node.setAttribute('type', 'text')
+            input2Node.setAttribute('value', NUMBER_TEMPLATE)
+            td2Node.appendChild(input2Node)
+
+            tr2Node.appendChild(th2Node)
+            tr2Node.appendChild(td2Node)
 	})
-*/
     }
 
     /**
