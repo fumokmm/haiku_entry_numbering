@@ -13,18 +13,23 @@
     // --------------------------------------------------------------
     // 定数定義
 
-    // データストアキー
-    const NUMBER_TEMPLATE_KEY = 'number_template'
-    const STATUS_ID_NUMBER_MAP = 'statusid_number_map'
-
-    // IDのプレフィックス
-    const NUMBER_TEMPLATE = GM_getValue(NUMBER_TEMPLATE_KEY, '$num: ')
-
     // モード
     const MODE = getMode()
 
+    // データストアキー
+    function DS_KEY(){}
+    DS_KEY.NUMBER_TEMPLATE = 'number_template'
+    DS_KEY.STATUS_ID_NUMBER_MAP = 'statusid_number_map'
+    DS_KEY.STATUS_ID_SAVE_COUNT = 'statusid_save_count'
+
     // データストアからデータを取得
-    var dataStore = eval('(' + GM_getValue(STATUS_ID_NUMBER_MAP, new DataStore().toSource()) + ')')
+    var numberTeplate = GM_getValue(DS_KEY.NUMBER_TEMPLATE, '$num: ')
+    var saveCount = GM_getValue(DS_KEY.STATUS_ID_SAVE_COUNT, 1000)
+    var dataStore = eval('(' + GM_getValue(DS_KEY.STATUS_ID_NUMBER_MAP, new DataStore(saveCount).toSource()) + ')')
+    if (! (dataStore.limit && dataStore.limit() == saveCount)) {
+        dataStore =  new DataStore(saveCount)
+        GM_setValue(DS_KEY.STATUS_ID_NUMBER_MAP, dataStore.toSource())
+    }
 
     // 現在のキーワード
     var searchKeywordInfo = getKeywordInfo()
@@ -102,7 +107,7 @@
                 if (titleNode.firstChild.tagName.toLowerCase() != 'span') {
 	            // 番号のspan要素を生成
                     var numberNode = document.createElement('span')
-                    numberNode.appendChild(document.createTextNode(NUMBER_TEMPLATE.replace('$num', number)))
+                    numberNode.appendChild(document.createTextNode(numberTeplate.replace('$num', number)))
                     // 生成した番号のspan要素をタイトルの前に追加
                     titleNode.insertBefore(numberNode, titleNode.firstChild)
 	        }
@@ -110,7 +115,7 @@
             })
 	})
         // データストア保存
-        GM_setValue(STATUS_ID_NUMBER_MAP, dataStore.toSource())
+        GM_setValue(DS_KEY.STATUS_ID_NUMBER_MAP, dataStore.toSource())
     }
 
     /**
@@ -130,7 +135,7 @@
 	            if (titleNode.firstChild.tagName.toLowerCase() != 'span') {
 	                // 番号のspan要素を生成
                         var numberNode = document.createElement('span')
-                        numberNode.appendChild(document.createTextNode(NUMBER_TEMPLATE.replace('$num', number)))
+                        numberNode.appendChild(document.createTextNode(numberTeplate.replace('$num', number)))
                         // 生成した番号のspan要素をタイトルの前に追加
                         titleNode.insertBefore(numberNode, titleNode.firstChild)
 	            }
@@ -175,7 +180,7 @@
             var td1Node = document.createElement('td')
             var input1Node = document.createElement('input')
             input1Node.setAttribute('type', 'text')
-            input1Node.setAttribute('value', NUMBER_TEMPLATE)
+            input1Node.setAttribute('value', numberTeplate)
             td1Node.appendChild(input1Node)
 
             tr1Node.appendChild(th1Node)
@@ -191,7 +196,7 @@
             var td2Node = document.createElement('td')
             var input2Node = document.createElement('input')
             input2Node.setAttribute('type', 'text')
-            input2Node.setAttribute('value', NUMBER_TEMPLATE)
+            input2Node.setAttribute('value', saveCount)
             td2Node.appendChild(input2Node)
 
             tr2Node.appendChild(th2Node)
@@ -253,8 +258,8 @@
     }
 
     // --------------------------------------------------------------
-    function DataStore() {
-        this._limit = 1000
+    function DataStore(limit) {
+        this._limit = limit
 	this._a = []
         this._m = {}
 
@@ -270,6 +275,9 @@
 	this.size = function() {
 	    return this._a.length
 	}
+        this.limit = function() {
+            return this._limit
+        }
  	this.contains = function(o) {
             return this._m[o] !== undefined
 	}
