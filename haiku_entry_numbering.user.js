@@ -27,7 +27,6 @@
     var saveCount = GM_getValue(DS_KEY.STATUS_ID_SAVE_COUNT, 1000)
     var dataStore = eval('(' + GM_getValue(DS_KEY.STATUS_ID_NUMBER_MAP, new DataStore(saveCount).toSource()) + ')')
     if (! (dataStore.limit && dataStore.limit() == saveCount)) {
-        alert('新しいのを頼む')
         dataStore = new DataStore(saveCount)
         GM_setValue(DS_KEY.STATUS_ID_NUMBER_MAP, dataStore.toSource())
     }
@@ -181,15 +180,30 @@
             var td1Node = document.createElement('td')
             var input1Node = document.createElement('input')
             input1Node.setAttribute('type', 'text')
+            input1Node.setAttribute('style', 'width: 100px')
             input1Node.setAttribute('value', numberTeplate)
             applyButton1 = document.createElement('button')
             applyButton1.appendChild(document.createTextNode('適用'))
             applyButton1.addEventListener('click', function(){
                 GM_setValue(DS_KEY.NUMBER_TEMPLATE, input1Node.value)
-                alert('適用しました。')
+                alert(input1Node.value + 'を適用しました。')
             }, false)
+            defaultButton1 = document.createElement('button')
+            defaultButton1.appendChild(document.createTextNode('デフォルトに戻す'))
+            defaultButton1.addEventListener('click', function(){
+                input1Node.value = '$num: '
+                GM_setValue(DS_KEY.NUMBER_TEMPLATE, input1Node.value)
+                alert('デフォルトに戻しました。')
+            }, false)
+            hintLabel1 = document.createElement('span')
+            hintLabel1.setAttribute('class', 'note')
+            hintLabel1.appendChild(document.createTextNode('※$numの部分が数値に置き換えられます。'))
+
             td1Node.appendChild(input1Node)
             td1Node.appendChild(applyButton1)
+            td1Node.appendChild(defaultButton1)
+            td1Node.appendChild(document.createElement('br'))
+            td1Node.appendChild(hintLabel1)
 
             tr1Node.appendChild(th1Node)
             tr1Node.appendChild(td1Node)
@@ -204,8 +218,25 @@
             var td2Node = document.createElement('td')
             var input2Node = document.createElement('input')
             input2Node.setAttribute('type', 'text')
+            input2Node.setAttribute('style', 'width: 100px')
             input2Node.setAttribute('value', saveCount)
+            applyButton2 = document.createElement('button')
+            applyButton2.appendChild(document.createTextNode('適用'))
+            applyButton2.addEventListener('click', function(){
+                GM_setValue(DS_KEY.STATUS_ID_SAVE_COUNT, input2Node.value)
+                alert(input2Node.value + 'を適用しました。')
+            }, false)
+            defaultButton2 = document.createElement('button')
+            defaultButton2.appendChild(document.createTextNode('デフォルトに戻す'))
+            defaultButton2.addEventListener('click', function(){
+                input2Node.value = '1000'
+                GM_setValue(DS_KEY.STATUS_ID_SAVE_COUNT, input2Node.value)
+                alert('デフォルトに戻しました。')
+            }, false)
+
             td2Node.appendChild(input2Node)
+            td2Node.appendChild(applyButton2)
+            td2Node.appendChild(defaultButton2)
 
             tr2Node.appendChild(th2Node)
             tr2Node.appendChild(td2Node)
