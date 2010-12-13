@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name           haiku_entry_numbering
 // @namespace      http://d.hatena.ne.jp/fumokmm/
-// @description    haiku_entry_numbering
+// @description    はてなハイクのキーワードエントリに番号付けを行います。
 // @include        http://h.hatena.ne.jp/*
 // @author         fumokmm
-// @date           2010-12-11
-// @version        0.02
+// @date           2010-12-14
+// @version        0.03
 // ==/UserScript==
 
 (function() {
