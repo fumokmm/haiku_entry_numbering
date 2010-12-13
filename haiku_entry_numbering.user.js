@@ -13,11 +13,12 @@
     // --------------------------------------------------------------
     // 定数定義
 
-    // IDのプレフィックス
-    const NUMBER_TEMPLATE = '$num: '
-
     // データストアキー
+    const NUMBER_TEMPLATE_KEY = 'number_template'
     const STATUS_ID_NUMBER_MAP = 'statusid_number_map'
+
+    // IDのプレフィックス
+    const NUMBER_TEMPLATE = GM_getValue(NUMBER_TEMPLATE_KEY, '$num: ')
 
     // モード
     const MODE = getMode()
