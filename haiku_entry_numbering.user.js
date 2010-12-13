@@ -17,13 +17,13 @@
     const NUMBER_TEMPLATE = '$num: '
 
     // データストアキー
-    const DS_KEY = 'statusid_number_map'
+    const STATUS_ID_NUMBER_MAP = 'statusid_number_map'
 
     // モード
     const MODE = getMode()
 
     // データストアからデータを取得
-    var dataStore = eval('(' + GM_getValue(DS_KEY, new DataStore().toSource()) + ')')
+    var dataStore = eval('(' + GM_getValue(STATUS_ID_NUMBER_MAP, new DataStore().toSource()) + ')')
 
     // 現在のキーワード
     var searchKeywordInfo = getKeywordInfo()
@@ -109,7 +109,7 @@
             })
 	})
         // データストア保存
-        GM_setValue(DS_KEY, dataStore.toSource())
+        GM_setValue(STATUS_ID_NUMBER_MAP, dataStore.toSource())
     }
 
     /**
