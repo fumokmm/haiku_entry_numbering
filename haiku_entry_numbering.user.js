@@ -27,7 +27,8 @@
     var saveCount = GM_getValue(DS_KEY.STATUS_ID_SAVE_COUNT, 1000)
     var dataStore = eval('(' + GM_getValue(DS_KEY.STATUS_ID_NUMBER_MAP, new DataStore(saveCount).toSource()) + ')')
     if (! (dataStore.limit && dataStore.limit() == saveCount)) {
-        dataStore =  new DataStore(saveCount)
+        alert('新しいのを頼む')
+        dataStore = new DataStore(saveCount)
         GM_setValue(DS_KEY.STATUS_ID_NUMBER_MAP, dataStore.toSource())
     }
 
@@ -181,7 +182,14 @@
             var input1Node = document.createElement('input')
             input1Node.setAttribute('type', 'text')
             input1Node.setAttribute('value', numberTeplate)
+            applyButton1 = document.createElement('button')
+            applyButton1.appendChild(document.createTextNode('適用'))
+            applyButton1.addEventListener('click', function(){
+                GM_setValue(DS_KEY.NUMBER_TEMPLATE, input1Node.value)
+                alert('適用しました。')
+            }, false)
             td1Node.appendChild(input1Node)
+            td1Node.appendChild(applyButton1)
 
             tr1Node.appendChild(th1Node)
             tr1Node.appendChild(td1Node)
